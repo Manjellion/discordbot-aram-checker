@@ -37,7 +37,10 @@ module.exports = {
         collector.on('collect', async i => {
             const selection = i.values[0];
             selectArr.push(selection);
-            await i.reply(`${i.user} has selected ${selection}, stored: ${selectArr}, !`);
+            await i.reply(`${i.user} has selected ${selection}, \/\s\/
+                stored: ${selectArr}, \/\s\/
+                ${selectArr.length}/${6}
+                `);
         });
 
     },

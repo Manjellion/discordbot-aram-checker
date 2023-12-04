@@ -28,21 +28,15 @@ module.exports = {
 
         try {
             const confirmation = await response.awaitMessageComponent({ filter: collectorFilter, time: 60000 });
-            const confirmed_players = [10];
-            const collector = response.createMessageComponentCollector({ componentType: ComponentType.StringSelect, time: 3_600_000  });
+            const confirmed_players = [];
 
             if(confirmation.customId === 'confirm') {
-                confirmed_players.push();
-                await confirmation.update({ content: `New Player Joined`, components: [] });
-                collector.on('collect', async i => {
-                    await i.reply(`${i.user}, \/\s\/
-                         \/\s\/
-                        ${confirmed_players.length}/6
-                        `);
-                });
+                confirmed_players.push(interaction.user.globalName);
+                await confirmation.update({ content: `New Player Joined, Player count: ${confirmed_players.length} / 10, Players - ${confirmed_players}`, components: [] });
             } else if (confirmation.customId === 'no') {
                 await confirmation.update({ content: 'Player has declined', components: [] });
             }
+
         } catch(e) {
             await interaction.editReply({ content: 'Confirmation not received within 1 minute, cancelling', components: [] });
             console.log('Error: ', e);

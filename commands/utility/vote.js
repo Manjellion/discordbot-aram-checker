@@ -1,4 +1,4 @@
-const { ActionRowBuilder, ButtonBuilder, ButtonStyle, SlashCommandBuilder, ComponentType } = require('discord.js');
+const { ActionRowBuilder, ButtonBuilder, ButtonStyle, SlashCommandBuilder, ComponentType, WorkerContextFetchingStrategy } = require('discord.js');
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -33,8 +33,9 @@ module.exports = {
             if(confirmation.customId === 'confirm') {
                 confirmed_players.push(interaction.user.globalName);
                 await confirmation.update({ content: `New Player Joined, Player count: ${confirmed_players.length} / 10, Players - ${confirmed_players}`, components: [] });
+
             } else if (confirmation.customId === 'no') {
-                await confirmation.update({ content: 'Player has declined', components: [] });
+                await confirmation.update({ content: `${interaction.user.globalName} Player has declined`, components: [] });
             }
 
         } catch(e) {

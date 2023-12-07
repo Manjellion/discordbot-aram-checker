@@ -9,7 +9,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 // Discord.js version ^13.0 require us to explicitly define client intents
-const { Client, GatewayIntentBits, Events, Collection } = require('discord.js');
+const { Client, GatewayIntentBits, Events, Collection, ButtonBuilder, ButtonStyle, ActionRowBuilder, ComponentType } = require('discord.js');
 const client = new Client({ 
   intents: [
     GatewayIntentBits.Guilds, 
@@ -22,6 +22,69 @@ const client = new Client({
 client.on('ready', () => {
   console.log(`Logged in as ${client.user.tag}!`);
 });
+
+// Collector with Button on Message
+client.on('messageCreate', async (message) => {
+  if (message.author.bot) return;
+
+  if (message.content !== 'Vote') return;
+
+  const confirmBtn = new ButtonBuilder()
+    .setLabel('Confirm')
+    .setStyle(ButtonStyle.Success)
+    .setCustomId('confirmed');
+
+  const declineBtn = new ButtonBuilder()
+    .setLabel('Decline')
+    .setStyle(ButtonStyle.Danger)
+    .setCustomId('declined');
+  
+  const buttonRow = new ActionRowBuilder().addComponents(confirmBtn, declineBtn);
+
+  const reply = await message.reply({ content: `Click on a button noob... YOU HAVE 1 MINUTE`, components: [buttonRow] });
+
+  const filter = (i) => i.user.id === message.author.id;
+
+  const collector = reply.createMessageComponentCollector({
+    componentType: ComponentType.Button,
+    filter,
+    time: 10_000, // Change to 60_000 on launch (10_000) is being used to test in shortcase
+
+  });
+
+  const confirmed = [];
+
+  collector.on('collect', (interaction) => {
+    if(confirmed.length !== 10) {
+      if(interaction.customId === 'confirmed') {
+        confirmed.push(interaction.user.globalName);
+        interaction.reply(`${interaction.user.globalName} has joined, player count - ${confirmed.length} / 10`);
+        return;
+      }
+    }
+    if(interaction.customId === 'declined') {
+      interaction.reply(`${interaction.user.globalName} is a noob`);
+      return;
+    }
+  })
+
+  collector.on('end', () => {
+    confirmBtn.setDisabled(true);
+    declineBtn.setDisabled(true);
+
+    message.channel.send(`Players: ${confirmed.length} / 10 have confirmed`)
+    for (var i = 0; i < confirmed.length; i++) {
+      message.channel.send(confirmed[i]);
+      console.log(confirmed);
+    }
+
+    reply.edit({
+      content: 'You are out of time',
+      components: [buttonRow]
+    })
+  })
+
+})
 
 // Log In to our bot
 client.login(process.env.TOKEN);
